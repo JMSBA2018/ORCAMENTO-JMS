@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JMS Ar Condicionado e Refrigeração - Sistema de Orçamentos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-2 sm:p-6 font-sans">
+
+    <!-- Tela de Login / Proteção -->
+    <div id="telaLogin" class="fixed inset-0 bg-slate-950 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl text-center">
+            <div class="text-cyan-400 text-3xl mb-2"><i class="fa-solid fa-snowflake"></i></div>
+            <h2 class="text-lg font-bold text-slate-100">JMS Orçamentos</h2>
+            <p class="text-xs text-slate-400">Insira sua senha de acesso exclusivo para continuar.</p>
+            <input type="password" id="inputSenha" placeholder="Digite sua senha" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none text-center">
+            <button onclick="verificarSenha()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-xl transition text-sm">Entrar no Sistema</button>
+            <p id="erroLogin" class="text-rose-400 text-xs hidden">Senha incorreta!</p>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal do Sistema -->
+    <div id="appSistema" class="max-w-4xl mx-auto space-y-6 hidden">
+        <!-- Cabeçalho -->
+        <header class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-cyan-400 tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-snowflake"></i> JMS Ar Condicionado
+                </h1>
+                <p class="text-xs text-slate-400">Sistema Profissional de Orçamentos Técnicos</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="abrirConfig()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold transition border border-slate-600 flex items-center gap-2">
+                    <i class="fa-solid fa-gear"></i> Preços
+                </button>
+                <button onclick="sairSistema()" class="bg-rose-900/40 hover:bg-rose-900/60 text-rose-300 px-3 py-2 rounded-xl text-sm font-semibold transition border border-rose-800" title="Bloquear Sistema">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Formulário Principal -->
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+            <!-- Dados do Cliente e Equipamento -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl space-y-4">
+                <h2 class="text-lg font-bold text-slate-200 border-b border-slate-700 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-cyan-400"></i> Dados do Cliente & Equipamento
+                </h2>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome do Cliente / Razão Social</label>
+                    <input type="text" id="cliNome" placeholder="Ex: João da Silva" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp / Telefone</label>
+                        <input type="text" id="cliTel" placeholder="(71) 99999-9999" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">CPF / CNPJ</label>
+                        <input type="text" id="cliDoc" placeholder="Opcional" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Endereço Completo (Local da Instalação)</label>
+                    <input type="text" id="cliEnd" placeholder="Rua, Número, Bairro, Cidade - UF" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Marca</label>
+                        <select id="eqMarca" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="Elgin">Elgin</option>
+                            <option value="Gree">Gree</option>
+                            <option value="LG">LG</option>
+                            <option value="Midea">Midea</option>
+                            <option value="Samsung">Samsung</option>
+                            <option value="Springer Midea">Springer Midea</option>
+                            <option value="Daikin">Daikin</option>
+                            <option value="Fujitsu">Fujitsu</option>
+                            <option value="Consul">Consul</option>
+                            <option value="Electrolux">Electrolux</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Capacidade</label>
+                        <select id="eqCap" onchange="atualizarTecnico()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="9000">9.000 BTU/h (Inverter/Conv)</option>
+                            <option value="12000">12.000 BTU/h (Inverter/Conv)</option>
+                            <option value="18000" selected>18.000 BTU/h (Inverter/Conv)</option>
+                            <option value="24000">24.000 BTU/h (Inverter/Conv)</option>
+                            <option value="30000">30.000 BTU/h (Piso/Teto)</option>
+                            <option value="36000">36.000 BTU/h (Piso/Teto)</option>
+                            <option value="48000">48.000 BTU/h (Piso/Teto)</option>
+                            <option value="60000">60.000 BTU/h (Piso/Teto)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tecnologia</label>
+                        <select id="eqTec" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="Inverter">Inverter</option>
+                            <option value="Convencional">Convencional</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tipo</label>
+                        <select id="eqTipo" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="Split Wall">Split Wall</option>
+                            <option value="Piso Teto">Piso Teto</option>
+                            <option value="Cassete">Cassete</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parâmetros de Instalação e Local -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl space-y-4">
+                <h2 class="text-lg font-bold text-slate-200 border-b border-slate-700 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-wrench text-cyan-400"></i> Infraestrutura & Local
+                </h2>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Comprimento Tubulação (m)</label>
+                        <input type="number" id="infMetragem" value="6.0" step="0.5" min="1" oninput="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                        <span id="txtPreCarga" class="text-[10px] text-cyan-400 mt-1 block">Incluso até 5.0m (Carga de Fábrica)</span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Ambiente / Local</label>
+                        <select id="infLocal" onchange="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="terreo">Térreo (Acesso Fácil)</option>
+                            <option value="sobrado">Sobrado / 1º Andar</option>
+                            <option value="fachada">Edifício / Fachada Externa</option>
+                            <option value="sotao">Sótão / Entreforro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-1">
+                    <label class="block text-xs font-semibold text-slate-300">Adicionais e Complexidade:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-700 cursor-pointer">
+                            <input type="checkbox" id="addConcreto" onchange="calcular()" class="accent-cyan-400"> Perfuração em Viga/Concreto
+                        </label>
+                        <label class="flex items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-700 cursor-pointer">
+                            <input type="checkbox" id="addAndaime" onchange="calcular()" class="accent-cyan-400"> Altura Elevada / Escada
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Resumo Técnico Automático -->
+                <div class="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 text-xs space-y-1 text-slate-300">
+                    <div class="flex justify-between"><span>Bitola Líquido/Sucção:</span> <strong id="lblBitolas" class="text-cyan-400">1/4" e 1/2"</strong></div>
+                    <div class="flex justify-between"><span>Suporte Recomendado:</span> <strong id="lblSuporte" class="text-cyan-400">Aço Carbono Reforçado</strong></div>
+                    <div class="flex justify-between"><span>Aditivo de Fluido Extra:</span> <strong id="lblGasExtra" class="text-cyan-400">1.0 m (15g/m)</strong></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Pré-visualização da Proposta (Orcamento Oficial) -->
+        <section id="orcamentoImprimir" class="bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <!-- Cabeçalho Proposta -->
+            <div class="flex flex-col sm:flex-row justify-between border-b border-slate-200 pb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-cyan-600">JMS Ar Condicionado e Refrigeração</h2>
+                    <p class="text-xs text-slate-600">Instalação, Manutenção e Assistência Técnica Especializada</p>
+                    <p class="text-xs text-slate-600 mt-1">Camaçari - Bahia | CNPJ: MEI Oficial</p>
+                </div>
+                <div class="text-left sm:text-right">
+                    <span class="inline-block bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded-full mb-1">PROPOSTA COMERCIAL</span>
+                    <p class="text-xs text-slate-600">Orçamento Nº: <strong id="outNumOrc">JMS-202610</strong></p>
+                    <p class="text-xs text-slate-600">Data: <strong id="outData">25/10/2026</strong> | Validade: 7 dias</p>
+                </div>
+            </div>
+
+            <!-- Dados do Cliente Impressão -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-1">
+                <p class="font-bold text-slate-700 uppercase mb-1"><i class="fa-solid fa-user"></i> Informações do Cliente</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div><strong>Cliente:</strong> <span id="resCliNome">Não informado</span></div>
+                    <div><strong>WhatsApp:</strong> <span id="resCliTel">Não informado</span></div>
+                    <div><strong>Endereço:</strong> <span id="resCliEnd">Não informado</span></div>
+                    <div><strong>Documento:</strong> <span id="resCliDoc">Não informado</span></div>
+                </div>
+            </div>
+
+            <!-- Equipamento Selecionado -->
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 text-xs space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-700 uppercase">Equipamento Selecionado:</span>
+                    <span id="resTipoBadge" class="bg-slate-200 text-slate-800 font-bold px-2.5 py-0.5 rounded text-[11px]">Split Wall</span>
+                </div>
+                <div class="text-sm font-bold text-slate-800" id="resEquipTitulo">Elgin Inverter - 18.000 BTU</div>
+                <div class="text-slate-600" id="resEquipSpecs">Tubulação: 1/4" (Liq) e 1/2" (Suc) | Suporte Exigido: Aço Carbono Reforçado</div>
+            </div>
+
+            <!-- Tabela de Valores -->
+            <div>
+                <h3 class="text-xs font-bold text-slate-600 uppercase mb-2">Detalhamento dos Serviços e Materiais</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                            <tr>
+                                <th class="p-2.5 rounded-l-lg">Descrição do Item</th>
+                                <th class="p-2.5 text-center">Qtd / Detalhes</th>
+                                <th class="p-2.5 text-right rounded-r-lg">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaItens" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Total Geral -->
+            <div class="flex justify-end items-center border-t border-slate-200 pt-4">
+                <div class="text-right">
+                    <span class="text-xs text-slate-500 uppercase block">Valor Total do Orçamento</span>
+                    <span id="resTotalGeral" class="text-2xl sm:text-3xl font-black text-slate-900">R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- Termos e Condições -->
+            <div class="border-t border-slate-200 pt-4 text-[11px] text-slate-500 space-y-1">
+                <p class="font-bold text-slate-700 uppercase">Procedimentos Técnicos Padronizados Incluídos:</p>
+                <ul class="list-disc pl-4 space-y-0.5">
+                    <li>Tubulação 100% Cobre com isolamento térmico individual;</li>
+                    <li>Teste de estanqueidade com nitrogênio de alta pressão;</li>
+                    <li>Processo de Vácuo com Vacuômetro Digital (abaixo de 500 Microns);</li>
+                    <li>Cabo PP de interligação blindado normatizado;</li>
+                    <li>Coxins de borracha anti-vibração na condensadora;</li>
+                    <li>Garantia integral de 90 dias sobre a mão de obra prestada.</li>
+                </ul>
+            </div>
+            
+            <div class="text-center pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+                Prestador: <strong>José Manoel dos Santos</strong> | JMS Ar Condicionado e Refrigeração
+            </div>
+        </section>
+
+        <!-- Botões de Ação Final -->
+        <div class="flex flex-col sm:flex-row gap-3 no-print pb-8">
+            <button onclick="enviarWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Orçamento via WhatsApp
+            </button>
+            <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-print"></i> Imprimir / Salvar PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Configuração de Preços -->
+    <div id="modalConfig" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-400"></i> Tabela de Preços (Mão de Obra)</h3>
+                <button onclick="fecharConfig()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 mb-1">Valor Base Instalação (9k a 12k BTUs) [R$]</label>
+                    <input type="number" id="cfgBase9k" value="350" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-slate-300 mb-1">Valor Base Instalação (18k a 24k BTUs) [R$]</label>
+                    <input type="number" id="cfgBase18k" value="450" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-slate-300 mb-1">Valor Base Instalação (30k+ BTUs / Piso-Teto) [R$]</label>
+                    <input type="number" id="cfgBase30k" value="650" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-slate-300 mb-1">Preço do Metro Extra de Tubulação (Cobre) [R$]</label>
+                    <input type="number" id="cfgMetro" value="110" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-slate-300 mb-1">Taxa de Perfuração em Concreto [R$]</label>
+                    <input type="number" id="cfgConcreto" value="120" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-slate-300 mb-1">Taxa de Trabalho em Altura / Andares [R$]</label>
+                    <input type="number" id="cfgAndaime" value="150" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
+                </div>
+            </div>
+
+            <button onclick="salvarConfig()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-xl transition text-sm">Salvar Alterações</button>
+        </div>
+    </div>
+
+    <script>
+        // Defina sua senha aqui
+        const SENHA_MESTRE = "JMS2026";
+
+        function verificarSenha() {
+            const digitada = document.getElementById('inputSenha').value;
+            if (digitada === SENHA_MESTRE) {
+                localStorage.setItem('jms_logado', 'true');
+                liberarApp();
+            } else {
+                document.getElementById('erroLogin').classList.remove('hidden');
+            }
+        }
+
+        function liberarApp() {
+            document.getElementById('telaLogin').classList.add('hidden');
+            document.getElementById('appSistema').classList.remove('hidden');
+            atualizarTecnico();
+            calcular();
+        }
+
+        function sairSistema() {
+            localStorage.removeItem('jms_logado');
+            location.reload();
+        }
+
+        // Mantém logado se já digitou na sessão
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('jms_logado') === 'true') {
+                liberarApp();
+            }
+        });
+
+        const dadosTecnicos = {
+            "9000": { bitola: "1/4\" (Liq) e 3/8\" (Suc)", suporte: "Aço Carbono 400mm + Coxins", preCarga: 5, gasExtraG: 15, precoBase: 350, peso: "26 kg" },
+            "12000": { bitola: "1/4\" (Liq) e 3/8\" (Suc)", suporte: "Aço Carbono 400mm + Coxins", preCarga: 5, gasExtraG: 15, precoBase: 380, peso: "30 kg" },
+            "18000": { bitola: "1/4\" (Liq) e 1/2\" (Suc)", suporte: "Aço Carbono Reforçado + Coxins", preCarga: 5, gasExtraG: 20, precoBase: 450, peso: "38 kg" },
+            "24000": { bitola: "3/8\" (Liq) e 5/8\" (Suc)", suporte: "Aço Carbono Reforçado + Coxins", preCarga: 5, gasExtraG: 30, precoBase: 550, peso: "48 kg" },
+            "30000": { bitola: "3/8\" (Liq) e 5/8\" (Suc)", suporte: "Suporte de Solo / Piso ou Mão Francesa Pesada", preCarga: 7.5, gasExtraG: 40, precoBase: 650, peso: "65 kg" },
+            "36000": { bitola: "3/8\" (Liq) e 3/4\" (Suc)", suporte: "Suporte de Solo / Piso ou Mão Francesa Pesada", preCarga: 7.5, gasExtraG: 50, precoBase: 750, peso: "75 kg" },
+            "48000": { bitola: "3/8\" (Liq) e 3/4\" (Suc)", suporte: "Suporte de Solo / Piso ou Mão Francesa Pesada", preCarga: 7.5, gasExtraG: 60, precoBase: 850, peso: "90 kg" },
+            "60000": { bitola: "3/8\" (Liq) e 7/8\" (Suc)", suporte: "Suporte de Solo / Piso ou Mão Francesa Pesada", preCarga: 7.5, gasExtraG: 70, precoBase: 950, peso: "105 kg" }
+        };
+
+        let precosCustom = { base9k: 350, base18k: 450, base30k: 650, metro: 110, concreto: 120, andaime: 150 };
+
+        function abrirConfig() { document.getElementById('modalConfig').classList.remove('hidden'); document.getElementById('modalConfig').classList.add('flex'); }
+        function fecharConfig() { document.getElementById('modalConfig').classList.remove('hidden'); document.getElementById('modalConfig').classList.add('flex'); document.getElementById('modalConfig').classList.remove('flex'); document.getElementById('modalConfig').classList.add('hidden'); }
+        function salvarConfig() {
+            precosCustom.base9k = parseFloat(document.getElementById('cfgBase9k').value) || 350;
+            precosCustom.base18k = parseFloat(document.getElementById('cfgBase18k').value) || 450;
+            precosCustom.base30k = parseFloat(document.getElementById('cfgBase30k').value) || 650;
+            precosCustom.metro = parseFloat(document.getElementById('cfgMetro').value) || 110;
+            precosCustom.concreto = parseFloat(document.getElementById('cfgConcreto').value) || 120;
+            precosCustom.andaime = parseFloat(document.getElementById('cfgAndaime').value) || 150;
+            fecharConfig();
+            calcular();
+        }
+
+        function atualizarTecnico() {
+            const cap = document.getElementById('eqCap').value;
+            const tech = dadosTecnicos[cap];
+            document.getElementById('lblBitolas').innerText = tech.bitola;
+            document.getElementById('lblSuporte').innerText = tech.suporte;
+            document.getElementById('txtPreCarga').innerText = `Incluso até ${tech.preCarga}m (Carga de Fábrica)`;
+            calcular();
+        }
+
+        function calcular() {
+            const cap = document.getElementById('eqCap').value;
+            const marca = document.getElementById('eqMarca').value;
+            const tec = document.getElementById('eqTec').value;
+            const tipo = document.getElementById('eqTipo').value;
+            const metragemTotal = parseFloat(document.getElementById('infMetragem').value) || 0;
+            
+            const tech = dadosTecnicos[cap];
+
+            let metrosExtra = Math.max(0, metragemTotal - tech.preCarga);
+            let custoTubulacaoExtra = metrosExtra * precosCustom.metro;
+            let valorBase = cap <= 12000 ? precosCustom.base9k : (cap <= 24000 ? precosCustom.base18k : precosCustom.base30k);
+
+            document.getElementById('resCliNome').innerText = document.getElementById('cliNome').value || 'Cliente não identificado';
+            document.getElementById('resCliTel').innerText = document.getElementById('cliTel').value || 'Não informado';
+            document.getElementById('resCliEnd').innerText = document.getElementById('cliEnd').value || 'Não informado';
+            document.getElementById('resCliDoc').innerText = document.getElementById('cliDoc').value || 'Não informado';
+
+            document.getElementById('resTipoBadge').innerText = tipo;
+            document.getElementById('resEquipTitulo').innerText = `${marca} ${tec} - ${Number(cap).toLocaleString()} BTU/h`;
+            document.getElementById('resEquipSpecs').innerText = `Tubulação: ${tech.bitola} | Suporte Exigido: ${tech.suporte} | Peso Condensadora: ${tech.peso}`;
+
+            let tbody = document.getElementById('tabelaItens');
+            tbody.innerHTML = '';
+
+            let totalGeral = 0;
+
+            let trBase = document.createElement('tr');
+            trBase.innerHTML = `<td class="p-2.5">Instalação Técnica Padrão de Ar-Condicionado Split (${marca} ${cap} BTU ${tec})</td>
+                                <td class="p-2.5 text-center">1 Unidade</td>
+                                <td class="p-2.5 text-right font-semibold">R$ ${valorBase.toFixed(2)}</td>`;
+            tbody.appendChild(trBase);
+            totalGeral += valorBase;
+
+            if (metrosExtra > 0) {
+                let trTub = document.createElement('tr');
+                trTub.innerHTML = `<td class="p-2.5">Infraestrutura com tubulação de cobre isolada extra (${metrosExtra.toFixed(1)}m excedente além da pré-carga)</td>
+                                   <td class="p-2.5 text-center">${metrosExtra.toFixed(1)} Metros</td>
+                                   <td class="p-2.5 text-right font-semibold">R$ ${custoTubulacaoExtra.toFixed(2)}</td>`;
+                tbody.appendChild(trTub);
+                totalGeral += custoTubulacaoExtra;
+            }
+
+            let custoSuporte = 130;
+            let trSup = document.createElement('tr');
+            trSup.innerHTML = `<td class="p-2.5">Suporte Técnico da Condensadora (${tech.suporte}) + Coxins Anti-vibração</td>
+                               <td class="p-2.5 text-center">1 Conjunto</td>
+                               <td class="p-2.5 text-right font-semibold">R$ ${custoSuporte.toFixed(2)}</td>`;
+            tbody.appendChild(trSup);
+            totalGeral += custoSuporte;
+
+            if (document.getElementById('addConcreto').checked) {
+                let trConc = document.createElement('tr');
+                trConc.innerHTML = `<td class="p-2.5">Perfuração especial em viga / concreto armado</td>
+                                    <td class="p-2.5 text-center">Serviço</td>
+                                    <td class="p-2.5 text-right font-semibold">R$ ${precosCustom.concreto.toFixed(2)}</td>`;
+                tbody.appendChild(trConc);
+                totalGeral += precosCustom.concreto;
+            }
+
+            if (document.getElementById('addAndaime').checked) {
+                let trAnd = document.createElement('tr');
+                trAnd.innerHTML = `<td class="p-2.5">Trabalho em altura / fachada com acesso restrito</td>
+                                   <td class="p-2.5 text-center">Adicional</td>
+                                   <td class="p-2.5 text-right font-semibold">R$ ${precosCustom.andaime.toFixed(2)}</td>`;
+                tbody.appendChild(trAnd);
+                totalGeral += precosCustom.andaime;
+            }
+
+            document.getElementById('resTotalGeral').innerText = `R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        function enviarWhatsApp() {
+            const nome = document.getElementById('cliNome').value || 'Cliente';
+            const marca = document.getElementById('eqMarca').value;
+            const cap = document.getElementById('eqCap').value;
+            const total = document.getElementById('resTotalGeral').innerText;
+            
+            const msg = `Olá *${nome}*, segue o orçamento detalhado para a instalação do seu ar-condicionado *${marca} ${cap} BTUs*:\n\n*Valor Total:* ${total}\n\nInclui tubulação em cobre, vácuo com vacuômetro digital, suportes e coxins. Prestador: José Manoel dos Santos - JMS Ar Condicionado e Refrigeração. Podemos agendar o serviço?`;
+            
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    </script>
+</body>
+</html>

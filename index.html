@@ -2,318 +2,258 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Orçamentos - JMS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <title>Gerador de Orçamento - JMS Ar Condicionado</title>
+    <!-- Biblioteca jsPDF para gerar o PDF limpo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin: auto; }
+        h2 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        button { background: #0f172a; color: #fff; border: none; padding: 12px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
+        button:hover { background: #1e293b; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .checkbox-group input { width: auto; }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen p-2 sm:p-4 font-sans text-slate-800">
+<body>
 
-    <!-- Tela de Login / Senha -->
-    <div id="loginModal" class="fixed inset-0 bg-slate-900 bg-opacity-95 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-center">
-            <div class="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center mx-auto text-white text-2xl shadow-lg">
-                <i class="fas fa-lock"></i>
+<div class="container">
+    <h2>Novo Orçamento Técnico - JMS</h2>
+    
+    <!-- DADOS DO CLIENTE -->
+    <h3>1. Dados do Cliente</h3>
+    <div class="form-group">
+        <label>Nome / Razão Social</label>
+        <input type="text" id="cliNome" placeholder="Ex: Condomínio Alegre ou Nome do Cliente">
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Telefone / WhatsApp</label>
+                <input type="text" id="cliFone" placeholder="(71) 99999-9999">
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">JMS Ar Condicionado</h2>
-            <p class="text-sm text-slate-500">Acesso Restrito ao Sistema de Orçamentos</p>
-            <input type="password" id="accessPassword" placeholder="Digite a senha de acesso" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900 focus:outline-none text-center text-lg tracking-widest">
-            <button onclick="checkPassword()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition shadow-lg">
-                Entrar no Sistema
-            </button>
-            <p id="loginError" class="text-red-500 text-sm hidden font-medium">Senha incorreta. Tente novamente.</p>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label>CEP</label>
+                <input type="text" id="cliCep" placeholder="42800-000">
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Endereço Completo</label>
+        <input type="text" id="cliEndereco" placeholder="Rua, Número, Bairro, Cidade - BA">
+    </div>
+
+    <!-- ESPECIFICAÇÃO DO SERVIÇO -->
+    <h3>2. Serviço & Equipamento</h3>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Tipo de Serviço</label>
+                <select id="tipoServico">
+                    <option value="Instalação Técnica Completa">Instalação Técnica Completa</option>
+                    <option value="Manutenção Preventiva / Higienização">Manutenção Preventiva / Higienização</option>
+                    <option value="Manutenção Corretiva / Reparo">Manutenção Corretiva / Reparo</option>
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label>Capacidade do Aparelho</label>
+                <select id="capacidadeBtu" onchange="atualizarKitPrecadastrado()">
+                    <option value="9000">Split 9.000 BTUs (Inverter)</option>
+                    <option value="12000" selected>Split 12.000 BTUs (Inverter)</option>
+                    <option value="18000">Split 18.000 BTUs (Inverter)</option>
+                    <option value="24000">Split 24.000 BTUs (Inverter)</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <!-- Aplicação Principal -->
-    <div id="appContainer" class="max-w-4xl mx-auto space-y-6 hidden">
+    <div class="form-group">
+        <div class="checkbox-group">
+            <input type="checkbox" id="forneceEquipamento">
+            <label for="forneceEquipamento" style="margin:0; cursor:pointer;">Fornecimento de Equipamento pela JMS (Aparelho Novo)</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="checkbox-group">
+            <input type="checkbox" id="incluiKit" checked onchange="toggleKitCampos()">
+            <label for="incluiKit" style="margin:0; cursor:pointer;">Incluir Kit de Instalação / Tubulação Pré-cadastrado</label>
+        </div>
+    </div>
+
+    <!-- VALORES -->
+    <h3>3. Valores e Condições</h3>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Valor da Mão de Obra / Serviço (R$)</label>
+                <input type="number" id="valServico" value="400.00">
+            </div>
+        </div>
+        <div class="col" id="blocoKitValor">
+            <div class="form-group">
+                <label>Valor do Kit / Materiais (R$)</label>
+                <input type="number" id="valKit" value="220.00">
+            </div>
+        </div>
+    </div>
+
+    <button onclick="gerarPDFJMS()">Gerar Orçamento PDF Minimalista</button>
+</div>
+
+<script>
+    function atualizarKitPrecadastrado() {
+        const btu = document.getElementById('capacidadeBtu').value;
+        const valKitInput = document.getElementById('valKit');
         
-        <!-- Cabeçalho -->
-        <header class="bg-blue-950 text-white p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4 border-b-4 border-blue-600">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-xl shadow">
-                    JMS
-                </div>
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-bold">JMS Ar Condicionado e Refrigeração</h1>
-                    <p class="text-xs text-blue-200">Gerador Profissional de Orçamentos Técnicos</p>
-                </div>
-            </div>
-            <button onclick="toggleConfig()" class="bg-blue-900 hover:bg-blue-800 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 border border-blue-800">
-                <i class="fas fa-sliders-h text-blue-300"></i> Configurar Tabela de Preços
-            </button>
-        </header>
+        // Exemplo de automação de preço do kit com base no BTU pré-cadastrado
+        if (btu === '9000' || btu === '12000') {
+            valKitInput.value = '220.00';
+        } else if (btu === '18000') {
+            valKitInput.value = '310.00';
+        } else if (btu === '24000') {
+            valKitInput.value = '480.00';
+        }
+    }
 
-        <!-- Painel de Configuração -->
-        <div id="configPanel" class="bg-white p-6 rounded-2xl shadow-md space-y-4 hidden border border-slate-200">
-            <h3 class="text-lg font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
-                <i class="fas fa-tools text-blue-900"></i> Valor por Metro de Tubulação Excedente (por Porte)
-            </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">9.000 a 12.000 BTUs</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-slate-400 font-bold">R$</span>
-                        <input type="number" id="rateSmall" value="110" class="w-full pl-10 pr-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-900">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">18.000 a 24.000 BTUs</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-slate-400 font-bold">R$</span>
-                        <input type="number" id="rateMedium" value="160" class="w-full pl-10 pr-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-900">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">30.000 a 36.000+ BTUs</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-slate-400 font-bold">R$</span>
-                        <input type="number" id="rateLarge" value="230" class="w-full pl-10 pr-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-900">
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end">
-                <button onclick="toggleConfig()" class="bg-blue-950 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-900">Guardar Tabela</button>
-            </div>
-        </div>
+    function toggleKitCampos() {
+        const inclui = document.getElementById('incluiKit').checked;
+        document.getElementById('blocoKitValor').style.display = inclui ? 'block' : 'none';
+    }
 
-        <!-- Formulário do Orçamento -->
-        <div class="bg-white p-6 rounded-2xl shadow-md space-y-6">
-            <!-- Dados do Cliente -->
-            <div>
-                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
-                    <i class="fas fa-user text-blue-900"></i> Dados do Cliente
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="text" id="clientName" placeholder="Nome do Cliente" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900">
-                    <input type="text" id="clientPhone" placeholder="Telefone / WhatsApp" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900">
-                    <input type="text" id="clientAddress" placeholder="Endereço / Cidade" class="w-full sm:col-span-2 p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900">
-                </div>
-            </div>
+    function gerarPDFJMS() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-            <!-- Serviço e Equipamento -->
-            <div class="border-t pt-4">
-                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
-                    <i class="fas fa-snowflake text-blue-900"></i> Especificação do Aparelho e Mão de Obra
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Capacidade do Aparelho</label>
-                        <select id="btuCapacity" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900 bg-white" onchange="calculateTotal()">
-                            <option value="9000">9.000 BTUs</option>
-                            <option value="12000">12.000 BTUs</option>
-                            <option value="18000">18.000 BTUs</option>
-                            <option value="24000">24.000 BTUs</option>
-                            <option value="30000">30.000 BTUs</option>
-                            <option value="36000">36.000 BTUs</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Valor da Mão de Obra Base (R$)</label>
-                        <input type="number" id="baseLabor" value="350" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900" oninput="calculateTotal()">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Metros Incluídos no Serviço</label>
-                        <input type="number" id="includedMeters" value="3" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900" oninput="calculateTotal()">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Metros Totais Necessários</label>
-                        <input type="number" id="totalMeters" value="3" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900" oninput="calculateTotal()">
-                    </div>
-                </div>
-            </div>
+        // Dados recolhidos do formulário
+        const nome = document.getElementById('cliNome').value || "Cliente Não Informado";
+        const fone = document.getElementById('cliFone').value || "(71) --";
+        const cep = document.getElementById('cliCep').value || "";
+        const endereco = document.getElementById('cliEndereco').value || "Endereço não informado";
+        const servico = document.getElementById('tipoServico').value;
+        const btu = document.getElementById('capacidadeBtu').value;
+        const fornece = document.getElementById('forneceEquipamento').checked;
+        const incluiKit = document.getElementById('incluiKit').checked;
+        
+        const valServico = parseFloat(document.getElementById('valServico').value) || 0;
+        const valKit = incluiKit ? (parseFloat(document.getElementById('valKit').value) || 0) : 0;
+        const total = valServico + valKit;
 
-            <!-- Resumo Financeiro -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                <div class="flex justify-between text-sm text-slate-600">
-                    <span>Mão de Obra Base:</span>
-                    <span id="displayBaseLabor" class="font-semibold">R$ 350,00</span>
-                </div>
-                <div class="flex justify-between text-sm text-slate-600">
-                    <span>Tubulação Excedente (<span id="extraMeterCount">0</span>m x <span id="ratePerMeter">R$ 110</span>/m):</span>
-                    <span id="displayExtraPiping" class="font-semibold">R$ 0,00</span>
-                </div>
-                <div class="flex justify-between text-lg font-black text-slate-900 border-t pt-2">
-                    <span>Valor Total Estimado:</span>
-                    <span id="displayTotal" class="text-blue-900">R$ 350,00</span>
-                </div>
-            </div>
+        // CABEÇALHO EMPRESA (Fiel aos dados oficiais da JMS)
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(15, 23, 42);
+        doc.text("JMS AR CONDICIONADO E REFRIGERAÇÃO", 15, 20);
 
-            <!-- Ações -->
-            <div class="flex gap-3">
-                <button onclick="generatePDF()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg text-base">
-                    <i class="fas fa-file-pdf"></i> Gerar PDF Profissional
-                </button>
-            </div>
-        </div>
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text("CNPJ: 29.694.983/0001-95 | Técnico: José Manoel", 15, 25);
+        doc.text("Rua da Glória, 8, loja 4, Gleba C, Camaçari - BA", 15, 30);
+        doc.text("WhatsApp: (71) 99683-6999", 15, 35);
 
-        <!-- Modelo Visual do PDF Profissional (Exatamente igual ao padrão corporativo solicitado) -->
-        <div class="hidden">
-            <div id="pdfTemplate" style="width: 700px; padding: 30px; background: #ffffff; font-family: Helvetica, Arial, sans-serif; color: #1e293b; box-sizing: border-box;">
-                
-                <!-- Cabeçalho idêntico ao modelo corporativo -->
-                <table style="width: 100%; border-collapse: collapse; background-color: #0d1b2a; color: #ffffff; margin-bottom: 20px;">
-                    <tr>
-                        <td style="padding: 15px 20px; font-weight: bold; font-size: 14px; letter-spacing: 1px; width: 30%;">
-                            JMS / LOGO
-                        </td>
-                        <td style="padding: 15px 20px; text-align: right; font-size: 16px; font-weight: bold; letter-spacing: 0.5px; width: 70%;">
-                            HVAC SERVICE QUOTATION
-                        </td>
-                    </tr>
-                </table>
+        // NÚMERO E DATA DO ORÇAMENTO (Canto direito)
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(15, 23, 42);
+        doc.text("ORÇAMENTO Nº: JMS-2026/100", 140, 20);
+        doc.setFont("Helvetica", "normal");
+        doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 140, 25);
 
-                <!-- Bloco de Dados do Cliente -->
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; margin-bottom: 25px; font-size: 12px;">
-                    <tr style="background-color: #e2e8f0;">
-                        <td colspan="2" style="padding: 8px 12px; font-weight: bold; color: #0d1b2a; border-bottom: 1px solid #cbd5e1;">Client Details</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 8px 12px; font-weight: bold; width: 25%; background-color: #f1f5f9; border-right: 1px solid #cbd5e1;">CLIENT NAME:</td>
-                        <td style="padding: 8px 12px;" id="pdfClientName"></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 8px 12px; font-weight: bold; background-color: #f1f5f9; border-right: 1px solid #cbd5e1;">PHONE:</td>
-                        <td style="padding: 8px 12px;" id="pdfClientPhone"></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px 12px; font-weight: bold; background-color: #f1f5f9; border-right: 1px solid #cbd5e1;">ADDRESS:</td>
-                        <td style="padding: 8px 12px;" id="pdfClientAddress"></td>
-                    </tr>
-                </table>
+        // LINHA DIVISÓRIA LEVE
+        doc.setDrawColor(220, 224, 230);
+        doc.line(15, 42, 195, 42);
 
-                <!-- Tabela de Itens (Com o cabeçalho azul escuro exato) -->
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; margin-bottom: 25px; font-size: 12px;">
-                    <thead>
-                        <tr style="background-color: #0d1b2a; color: #ffffff;">
-                            <th style="padding: 10px 12px; text-align: left; border-right: 1px solid #1b263b;">DESCRIPTION OF SERVICE / EQUIPMENT</th>
-                            <th style="padding: 10px 12px; text-align: right; width: 150px;">VALOR TOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid #e2e8f0; height: 32px;">
-                            <td style="padding: 8px 12px; border-right: 1px solid #cbd5e1;">Serviço de Instalação / Manutenção (<span id="pdfBtu"></span> BTUs)</td>
-                            <td style="padding: 8px 12px; text-align: right;" id="pdfBaseValue"></td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0; height: 32px;">
-                            <td style="padding: 8px 12px; border-right: 1px solid #cbd5e1;">Tubulação de Cobre Excedente (<span id="pdfExtraMeters"></span>m x <span id="pdfMeterRate"></span>)</td>
-                            <td style="padding: 8px 12px; text-align: right;" id="pdfExtraValue"></td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0; height: 28px;"><td style="border-right: 1px solid #cbd5e1;"></td><td></td></tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0; height: 28px;"><td style="border-right: 1px solid #cbd5e1;"></td><td></td></tr>
-                    </tbody>
-                </table>
+        // DADOS DO CLIENTE (Bloco limpo)
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("1. DADOS DO CLIENTE", 15, 50);
 
-                <!-- Total Summary Alinhado à Direita -->
-                <table style="width: 45%; margin-left: auto; border-collapse: collapse; border: 1px solid #cbd5e1; font-size: 12px;">
-                    <thead>
-                        <tr style="background-color: #0d1b2a; color: #ffffff;">
-                            <th colspan="2" style="padding: 8px; text-align: center; font-size: 11px; letter-spacing: 0.5px;">TOTAL SUMMARY</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid #cbd5e1;">
-                            <td style="padding: 6px 10px; font-weight: bold; background-color: #f1f5f9; width: 40%;">SUBTOTAL:</td>
-                            <td style="padding: 6px 10px; text-align: right;" id="pdfSubtotal"></td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #cbd5e1;">
-                            <td style="padding: 6px 10px; font-weight: bold; background-color: #f1f5f9;">TAX:</td>
-                            <td style="padding: 6px 10px; text-align: right;">R$ 0,00</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 6px 10px; font-weight: bold; background-color: #e2e8f0;">GRAND TOTAL:</td>
-                            <td style="padding: 6px 10px; text-align: right; font-weight: bold; color: #0d1b2a;" id="pdfTotalValue"></td>
-                        </tr>
-                    </tbody>
-                </table>
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text("Cliente: " + nome, 15, 57);
+        doc.text("Telefone: " + fone, 120, 57);
+        doc.text("Endereço: " + endereco + (cep ? " - CEP: " + cep : ""), 15, 63);
 
-            </div>
-        </div>
+        // ESPECIFICAÇÃO DOS SERVIÇOS
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("2. ESPECIFICAÇÃO DOS SERVIÇOS", 15, 75);
 
-    </div>
-
-    <script>
-        function checkPassword() {
-            const pwd = document.getElementById('accessPassword').value;
-            if (pwd === 'JMS2026') {
-                document.getElementById('loginModal').classList.add('hidden');
-                document.getElementById('appContainer').classList.remove('hidden');
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
+        let posY = 83;
+        doc.setFont("Helvetica", "normal");
+        doc.text("• " + servico + " (" + btu + " BTUs)", 18, posY);
+        
+        if (fornece) {
+            posY += 6;
+            doc.text("• Fornecimento de Equipamento Novo incluso.", 18, posY);
+        }
+        if (incluiKit) {
+            posY += 6;
+            doc.text("• Fornecimento de Kit de Instalação / Tubulação de Cobre.", 18, posY);
         }
 
-        function toggleConfig() {
-            const panel = document.getElementById('configPanel');
-            panel.classList.toggle('hidden');
-            calculateTotal();
+        // DISCRIMINAÇÃO FINANCEIRA
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("3. DISCRIÇÃO FINANCEIRA", 15, posY + 15);
+
+        // Resumo de valores
+        let finY = posY + 23;
+        doc.setFont("Helvetica", "normal");
+        doc.text("Mão de Obra / Serviço Principal", 15, finY);
+        doc.text("R$ " + valServico.toFixed(2), 170, finY, { align: 'right' });
+
+        if (incluiKit) {
+            finY += 6;
+            doc.text("Kit de Instalação / Materiais Complementares", 15, finY);
+            doc.text("R$ " + valKit.toFixed(2), 170, finY, { align: 'right' });
         }
 
-        function getMeterRate(btu) {
-            const rSmall = parseFloat(document.getElementById('rateSmall').value) || 110;
-            const rMedium = parseFloat(document.getElementById('rateMedium').value) || 160;
-            const rLarge = parseFloat(document.getElementById('rateLarge').value) || 230;
+        // TOTAL EM DESTAQUE LIMPO
+        finY += 12;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(15, finY - 4, 195, finY - 4);
 
-            if (btu <= 12000) return rSmall;
-            if (btu <= 24000) return rMedium;
-            return rLarge;
-        }
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(15, 23, 42);
+        doc.text("VALOR TOTAL DO ORÇAMENTO:", 110, finY + 4);
+        doc.text("R$ " + total.toFixed(2), 195, finY + 4, { align: 'right' });
 
-        function calculateTotal() {
-            const btu = parseInt(document.getElementById('btuCapacity').value);
-            const baseLabor = parseFloat(document.getElementById('baseLabor').value) || 0;
-            const includedMeters = parseFloat(document.getElementById('includedMeters').value) || 0;
-            const totalMeters = parseFloat(document.getElementById('totalMeters').value) || 0;
+        // PAGAMENTO E GARANTIA
+        finY += 20;
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text("Condições de Pagamento:", 15, finY);
+        doc.setFont("Helvetica", "normal");
+        doc.text("PIX, Cartão de Crédito ou Faturamento à Vista. Dados PIX (CNPJ): 29.694.983/0001-95", 15, finY + 5);
 
-            const ratePerMeter = getMeterRate(btu);
-            const extraMeters = Math.max(0, totalMeters - includedMeters);
-            const extraPipingCost = extraMeters * ratePerMeter;
-            const grandTotal = baseLabor + extraPipingCost;
+        finY += 14;
+        doc.setFont("Helvetica", "bold");
+        doc.text("Garantia Técnica:", 15, finY);
+        doc.setFont("Helvetica", "normal");
+        doc.text("90 (noventa) dias sobre a execução dos serviços prestados.", 15, finY + 5);
 
-            document.getElementById('ratePerMeter').innerText = `R$ ${ratePerMeter.toFixed(2)}`;
-            document.getElementById('extraMeterCount').innerText = extraMeters;
-            document.getElementById('displayBaseLabor').innerText = `R$ ${baseLabor.toFixed(2)}`;
-            document.getElementById('displayExtraPiping').innerText = `R$ ${extraPipingCost.toFixed(2)}`;
-            document.getElementById('displayTotal').innerText = `R$ ${grandTotal.toFixed(2)}`;
-        }
+        // ASSINATURA
+        finY += 25;
+        doc.text("Camaçari - BA, " + new Date().toLocaleDateString('pt-BR'), 105, finY, { align: 'center' });
+        doc.line(70, finY + 15, 140, finY + 15);
+        doc.text("José Manoel — JMS Ar Condicionado", 105, finY + 20, { align: 'center' });
 
-        function generatePDF() {
-            const btu = parseInt(document.getElementById('btuCapacity').value);
-            const baseLabor = parseFloat(document.getElementById('baseLabor').value) || 0;
-            const includedMeters = parseFloat(document.getElementById('includedMeters').value) || 0;
-            const totalMeters = parseFloat(document.getElementById('totalMeters').value) || 0;
-            const ratePerMeter = getMeterRate(btu);
-            const extraMeters = Math.max(0, totalMeters - includedMeters);
-            const extraPipingCost = extraMeters * ratePerMeter;
-            const grandTotal = baseLabor + extraPipingCost;
+        // Salvar PDF
+        doc.save("Orcamento_JMS_" + nome.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
+    }
+</script>
 
-            document.getElementById('pdfClientName').innerText = document.getElementById('clientName').value || '---';
-            document.getElementById('pdfClientPhone').innerText = document.getElementById('clientPhone').value || '---';
-            document.getElementById('pdfClientAddress').innerText = document.getElementById('clientAddress').value || '---';
-            document.getElementById('pdfBtu').innerText = btu;
-            document.getElementById('pdfBaseValue').innerText = `R$ ${baseLabor.toFixed(2)}`;
-            document.getElementById('pdfExtraMeters').innerText = extraMeters;
-            document.getElementById('pdfMeterRate').innerText = `R$ ${ratePerMeter.toFixed(2)}`;
-            document.getElementById('pdfExtraValue').innerText = `R$ ${extraPipingCost.toFixed(2)}`;
-            document.getElementById('pdfSubtotal').innerText = `R$ ${grandTotal.toFixed(2)}`;
-            document.getElementById('pdfTotalValue').innerText = `R$ ${grandTotal.toFixed(2)}`;
-
-            const element = document.getElementById('pdfTemplate');
-            const clientName = document.getElementById('clientName').value.replace(/\s+/g, '_') || 'Cliente';
-            
-            const opt = {
-                margin:       [0.4, 0.4, 0.4, 0.4],
-                filename:     `Orcamento_JMS_${clientName}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save();
-        }
-
-        calculateTotal();
-    </script>
 </body>
 </html>

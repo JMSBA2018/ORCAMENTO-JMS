@@ -2,20 +2,26 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Orçamento - JMS Ar Condicionado</title>
-    <!-- Biblioteca jsPDF para gerar o PDF limpo -->
+    <title>JMS Ar Condicionado - Gerador de Orçamentos</title>
+    <!-- Biblioteca jsPDF para geração do PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin: auto; }
-        h2 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 20px; color: #334155; }
+        .container { max-width: 850px; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: auto; }
+        h2 { color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; font-size: 20px; }
+        h3 { color: #1e293b; font-size: 16px; margin-top: 25px; border-left: 4px solid #0f172a; padding-left: 8px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #475569; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; background: #f8fafc; }
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
-        button { background: #0f172a; color: #fff; border: none; padding: 12px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; }
+        button { background: #0f172a; color: #fff; border: none; padding: 12px 20px; font-size: 15px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #1e293b; }
+        button.btn-whatsapp { background: #16a34a; }
+        button.btn-whatsapp:hover { background: #15803d; }
+        button.btn-email { background: #2563eb; }
+        button.btn-email:hover { background: #1d4ed8; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
         .checkbox-group input { width: auto; }
     </style>
@@ -23,13 +29,13 @@
 <body>
 
 <div class="container">
-    <h2>Novo Orçamento Técnico - JMS</h2>
+    <h2>JMS Ar Condicionado e Refrigeração — Gerador Inteligente</h2>
     
-    <!-- DADOS DO CLIENTE -->
+    <!-- 1. DADOS DO CLIENTE -->
     <h3>1. Dados do Cliente</h3>
     <div class="form-group">
         <label>Nome / Razão Social</label>
-        <input type="text" id="cliNome" placeholder="Ex: Condomínio Alegre ou Nome do Cliente">
+        <input type="text" id="cliNome" placeholder="Ex: Nome do Cliente ou Condomínio">
     </div>
     <div class="row">
         <div class="col">
@@ -40,38 +46,63 @@
         </div>
         <div class="col">
             <div class="form-group">
+                <label>E-mail do Cliente (Opcional)</label>
+                <input type="email" id="cliEmail" placeholder="cliente@email.com">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Endereço Completo</label>
+                <input type="text" id="cliEndereco" placeholder="Rua, Número, Bairro, Cidade">
+            </div>
+        </div>
+        <div class="col" style="max-width: 150px;">
+            <div class="form-group">
                 <label>CEP</label>
                 <input type="text" id="cliCep" placeholder="42800-000">
             </div>
         </div>
     </div>
-    <div class="form-group">
-        <label>Endereço Completo</label>
-        <input type="text" id="cliEndereco" placeholder="Rua, Número, Bairro, Cidade - BA">
-    </div>
 
-    <!-- ESPECIFICAÇÃO DO SERVIÇO -->
-    <h3>2. Serviço & Equipamento</h3>
+    <!-- 2. EQUIPAMENTO E SERVIÇO -->
+    <h3>2. Especificação do Aparelho & Serviço</h3>
     <div class="row">
         <div class="col">
             <div class="form-group">
-                <label>Tipo de Serviço</label>
-                <select id="tipoServico">
-                    <option value="Instalação Técnica Completa">Instalação Técnica Completa</option>
-                    <option value="Manutenção Preventiva / Higienização">Manutenção Preventiva / Higienização</option>
-                    <option value="Manutenção Corretiva / Reparo">Manutenção Corretiva / Reparo</option>
+                <label>Capacidade e Bitola (Base de Cobre)</label>
+                <select id="capacidadeBtu" onchange="atualizarParametrosPorBtu()">
+                    <option value="9000">Split 9.000 BTUs (Cobre 1/4" x 3/8")</option>
+                    <option value="12000" selected>Split 12.000 BTUs (Cobre 1/4" x 1/2")</option>
+                    <option value="18000">Split 18.000 BTUs (Cobre 1/4" x 5/8")</option>
+                    <option value="24000">Split 24.000 BTUs (Cobre 3/8" x 5/8")</option>
                 </select>
             </div>
         </div>
         <div class="col">
             <div class="form-group">
-                <label>Capacidade do Aparelho</label>
-                <select id="capacidadeBtu" onchange="atualizarKitPrecadastrado()">
-                    <option value="9000">Split 9.000 BTUs (Inverter)</option>
-                    <option value="12000" selected>Split 12.000 BTUs (Inverter)</option>
-                    <option value="18000">Split 18.000 BTUs (Inverter)</option>
-                    <option value="24000">Split 24.000 BTUs (Inverter)</option>
+                <label>Complexidade / Nível de Mão de Obra</label>
+                <select id="complexidadeServico" onchange="calcularValoresAutomaticos()">
+                    <option value="padrao">Instalação Padrão (Até 3m / Acessível)</option>
+                    <option value="complexa">Instalação Complexa (Andares / Altura / Dificuldade)</option>
+                    <option value="manutencao">Manutenção / Higienização Especializada</option>
                 </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label>Metros Excedentes de Tubulação (Além dos 3m padrão)</label>
+                <input type="number" id=" metrosExcedentes" value="0" min="0" oninput="calcularValoresAutomaticos()">
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label>Preço Base Referência do Cobre (kg / metro)</label>
+                <input type="number" id="precoCobre" value="35.00" oninput="calcularValoresAutomaticos()">
             </div>
         </div>
     </div>
@@ -79,50 +110,85 @@
     <div class="form-group">
         <div class="checkbox-group">
             <input type="checkbox" id="forneceEquipamento">
-            <label for="forneceEquipamento" style="margin:0; cursor:pointer;">Fornecimento de Equipamento pela JMS (Aparelho Novo)</label>
+            <label for="forneceEquipamento" style="margin:0; cursor:pointer;">Fornecimento de Equipamento Novo pela JMS</label>
         </div>
     </div>
 
     <div class="form-group">
         <div class="checkbox-group">
             <input type="checkbox" id="incluiKit" checked onchange="toggleKitCampos()">
-            <label for="incluiKit" style="margin:0; cursor:pointer;">Incluir Kit de Instalação / Tubulação Pré-cadastrado</label>
+            <label for="incluiKit" style="margin:0; cursor:pointer;">Incluir Kit Completo (Tubulação, Isolamento Térmico e Cabo PP)</label>
         </div>
     </div>
 
-    <!-- VALORES -->
-    <h3>3. Valores e Condições</h3>
+    <!-- 3. DISCRIMINAÇÃO FINANCEIRA CALCULADA -->
+    <h3>3. Discriminação Financeira</h3>
     <div class="row">
         <div class="col">
             <div class="form-group">
-                <label>Valor da Mão de Obra / Serviço (R$)</label>
+                <label>Valor Mão de Obra (R$)</label>
                 <input type="number" id="valServico" value="400.00">
             </div>
         </div>
         <div class="col" id="blocoKitValor">
             <div class="form-group">
-                <label>Valor do Kit / Materiais (R$)</label>
+                <label>Valor Kit Padrão / Materiais (R$)</label>
                 <input type="number" id="valKit" value="220.00">
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label>Valor Tubulação Excedente (R$)</label>
+                <input type="number" id="valExcedente" value="0.00">
             </div>
         </div>
     </div>
 
-    <button onclick="gerarPDFJMS()">Gerar Orçamento PDF Minimalista</button>
+    <!-- BOTÕES DE AÇÃO RÁPIDA -->
+    <div class="btn-group">
+        <button onclick="gerarPDFJMS()">Gerar PDF Minimalista</button>
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">Enviar WhatsApp</button>
+        <button class="btn-email" onclick="enviarEmail()">Enviar E-mail</button>
+    </div>
 </div>
 
 <script>
-    function atualizarKitPrecadastrado() {
+    function atualizarParametrosPorBtu() {
         const btu = document.getElementById('capacidadeBtu').value;
-        const valKitInput = document.getElementById('valKit');
+        const kitInput = document.getElementById('valKit');
         
-        // Exemplo de automação de preço do kit com base no BTU pré-cadastrado
-        if (btu === '9000' || btu === '12000') {
-            valKitInput.value = '220.00';
-        } else if (btu === '18000') {
-            valKitInput.value = '310.00';
-        } else if (btu === '24000') {
-            valKitInput.value = '480.00';
-        }
+        // Ajuste automático estimado do kit base (incluindo tubos, isolamento e cabo PP compatível)
+        if (btu === '9000') kitInput.value = '190.00';
+        else if (btu === '12000') kitInput.value = '220.00';
+        else if (btu === '18000') kitInput.value = '320.00';
+        else if (btu === '24000') kitInput.value = '480.00';
+        
+        calcularValoresAutomaticos();
+    }
+
+    function calcularValoresAutomaticos() {
+        const btu = document.getElementById('capacidadeBtu').value;
+        const complexidade = document.getElementById('complexidadeServico').value;
+        const metros = parseFloat(document.getElementById('metrosExcedentes').value) || 0;
+        const precoBaseCobre = parseFloat(document.getElementById('precoCobre').value) || 35.00;
+        
+        // Mão de obra base ajustada por complexidade
+        let maoObra = 400;
+        if (complexidade === 'complexa') maoObra = 550;
+        if (complexidade === 'manutencao') maoObra = 300;
+        if (btu === '18000') maoObra += 100;
+        if (btu === '24000') maoObra += 200;
+        document.getElementById('valServico').value = maoObra.toFixed(2);
+
+        // Fator de bitola para tubulação excedente (quanto maior a capacidade, mais encarece o metro excedente)
+        let multiplicadorBitola = 1.0;
+        if (btu === '12000') multiplicadorBitola = 1.2;
+        if (btu === '18000') multiplicadorBitola = 1.5;
+        if (btu === '24000') multiplicadorBitola = 2.0;
+
+        let valorExcedenteMetro = precoBaseCobre * multiplicadorBitola;
+        let totalExcedente = metros * valorExcedenteMetro;
+        document.getElementById('valExcedente').value = totalExcedente.toFixed(2);
     }
 
     function toggleKitCampos() {
@@ -130,130 +196,9 @@
         document.getElementById('blocoKitValor').style.display = inclui ? 'block' : 'none';
     }
 
-    function gerarPDFJMS() {
+    function construirPDFDoc() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // Dados recolhidos do formulário
         const nome = document.getElementById('cliNome').value || "Cliente Não Informado";
-        const fone = document.getElementById('cliFone').value || "(71) --";
-        const cep = document.getElementById('cliCep').value || "";
-        const endereco = document.getElementById('cliEndereco').value || "Endereço não informado";
-        const servico = document.getElementById('tipoServico').value;
-        const btu = document.getElementById('capacidadeBtu').value;
-        const fornece = document.getElementById('forneceEquipamento').checked;
-        const incluiKit = document.getElementById('incluiKit').checked;
-        
-        const valServico = parseFloat(document.getElementById('valServico').value) || 0;
-        const valKit = incluiKit ? (parseFloat(document.getElementById('valKit').value) || 0) : 0;
-        const total = valServico + valKit;
-
-        // CABEÇALHO EMPRESA (Fiel aos dados oficiais da JMS)
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(14);
-        doc.setTextColor(15, 23, 42);
-        doc.text("JMS AR CONDICIONADO E REFRIGERAÇÃO", 15, 20);
-
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text("CNPJ: 29.694.983/0001-95 | Técnico: José Manoel", 15, 25);
-        doc.text("Rua da Glória, 8, loja 4, Gleba C, Camaçari - BA", 15, 30);
-        doc.text("WhatsApp: (71) 99683-6999", 15, 35);
-
-        // NÚMERO E DATA DO ORÇAMENTO (Canto direito)
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(15, 23, 42);
-        doc.text("ORÇAMENTO Nº: JMS-2026/100", 140, 20);
-        doc.setFont("Helvetica", "normal");
-        doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 140, 25);
-
-        // LINHA DIVISÓRIA LEVE
-        doc.setDrawColor(220, 224, 230);
-        doc.line(15, 42, 195, 42);
-
-        // DADOS DO CLIENTE (Bloco limpo)
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text("1. DADOS DO CLIENTE", 15, 50);
-
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
-        doc.text("Cliente: " + nome, 15, 57);
-        doc.text("Telefone: " + fone, 120, 57);
-        doc.text("Endereço: " + endereco + (cep ? " - CEP: " + cep : ""), 15, 63);
-
-        // ESPECIFICAÇÃO DOS SERVIÇOS
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text("2. ESPECIFICAÇÃO DOS SERVIÇOS", 15, 75);
-
-        let posY = 83;
-        doc.setFont("Helvetica", "normal");
-        doc.text("• " + servico + " (" + btu + " BTUs)", 18, posY);
-        
-        if (fornece) {
-            posY += 6;
-            doc.text("• Fornecimento de Equipamento Novo incluso.", 18, posY);
-        }
-        if (incluiKit) {
-            posY += 6;
-            doc.text("• Fornecimento de Kit de Instalação / Tubulação de Cobre.", 18, posY);
-        }
-
-        // DISCRIMINAÇÃO FINANCEIRA
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text("3. DISCRIÇÃO FINANCEIRA", 15, posY + 15);
-
-        // Resumo de valores
-        let finY = posY + 23;
-        doc.setFont("Helvetica", "normal");
-        doc.text("Mão de Obra / Serviço Principal", 15, finY);
-        doc.text("R$ " + valServico.toFixed(2), 170, finY, { align: 'right' });
-
-        if (incluiKit) {
-            finY += 6;
-            doc.text("Kit de Instalação / Materiais Complementares", 15, finY);
-            doc.text("R$ " + valKit.toFixed(2), 170, finY, { align: 'right' });
-        }
-
-        // TOTAL EM DESTAQUE LIMPO
-        finY += 12;
-        doc.setDrawColor(200, 200, 200);
-        doc.line(15, finY - 4, 195, finY - 4);
-
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
-        doc.text("VALOR TOTAL DO ORÇAMENTO:", 110, finY + 4);
-        doc.text("R$ " + total.toFixed(2), 195, finY + 4, { align: 'right' });
-
-        // PAGAMENTO E GARANTIA
-        finY += 20;
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(9);
-        doc.text("Condições de Pagamento:", 15, finY);
-        doc.setFont("Helvetica", "normal");
-        doc.text("PIX, Cartão de Crédito ou Faturamento à Vista. Dados PIX (CNPJ): 29.694.983/0001-95", 15, finY + 5);
-
-        finY += 14;
-        doc.setFont("Helvetica", "bold");
-        doc.text("Garantia Técnica:", 15, finY);
-        doc.setFont("Helvetica", "normal");
-        doc.text("90 (noventa) dias sobre a execução dos serviços prestados.", 15, finY + 5);
-
-        // ASSINATURA
-        finY += 25;
-        doc.text("Camaçari - BA, " + new Date().toLocaleDateString('pt-BR'), 105, finY, { align: 'center' });
-        doc.line(70, finY + 15, 140, finY + 15);
-        doc.text("José Manoel — JMS Ar Condicionado", 105, finY + 20, { align: 'center' });
-
-        // Salvar PDF
-        doc.save("Orcamento_JMS_" + nome.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
-    }
-</script>
-
-</body>
-</html>
+        const fone = document.getElementById('

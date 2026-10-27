@@ -24,8 +24,8 @@
                 </h1>
                 <p class="text-xs text-slate-400">Sistema Profissional de Orçamentos Técnicos</p>
             </div>
-            <button onclick="abrirConfig()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold transition border border-slate-600 flex items-center gap-2">
-                <i class="fa-solid fa-gear"></i> Tabela de Preços e Equipe
+            <button onclick="abrirConfig()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-sliders"></i> Tabela de Preços e Configurações
             </button>
         </header>
 
@@ -38,7 +38,7 @@
                 </h2>
                 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome do Cliente / Razão Social</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome do Cliente</label>
                     <input type="text" id="cliNome" oninput="calcular()" placeholder="Ex: Tadeu Humberto" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
                 </div>
 
@@ -85,6 +85,7 @@
                             <option value="12000">12.000 BTU/h</option>
                             <option value="18000" selected>18.000 BTU/h</option>
                             <option value="24000">24.000 BTU/h</option>
+                            <option value="30000">30.000 BTU/h (Piso/Teto)</option>
                         </select>
                     </div>
                 </div>
@@ -108,40 +109,48 @@
                 </div>
             </div>
 
-            <!-- Seleção de Serviços, Pagamento e Desconto -->
+            <!-- Parâmetros, Serviços, Tubulação e Materiais -->
             <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl space-y-4">
                 <h2 class="text-lg font-bold text-slate-200 border-b border-slate-700 pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-cyan-400"></i> Serviços, Desconto & Pagamento
+                    <i class="fa-solid fa-list-check text-cyan-400"></i> Materiais & Serviços Técnicos
                 </h2>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tubulação Cobre (m)</label>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tubulação Cobre Total (m)</label>
                         <input type="number" id="infMetragem" value="5.0" step="0.5" min="1" oninput="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
-                        <span id="txtPreCarga" class="text-[10px] text-cyan-400 mt-1 block">Incluso até 5.0m</span>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Desconto Aplicado (R$)</label>
-                        <input type="number" id="valDesconto" value="0" min="0" step="5" oninput="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-cyan-400 font-bold focus:border-cyan-400 outline-none">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Modo de Cálculo Cobre</label>
+                        <select id="modoCobre" onchange="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="metro">Cobrar por Metro (R$/m)</option>
+                            <option value="quilo">Cobrar por Quilo (R$/kg)</option>
+                        </select>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Forma de Pagamento</label>
-                    <select id="selPagamento" onchange="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
-                        <option value="PIX / Dinheiro à Vista (5% Desconto)">PIX / Dinheiro à Vista</option>
-                        <option value="Cartão de Crédito - 2x sem juros">Cartão de Crédito - 2x sem juros</option>
-                        <option value="Cartão de Crédito - Até 10x">Cartão de Crédito - Até 10x</option>
-                        <option value="Transferência Bancária / TED">Transferência Bancária / TED</option>
-                        <option value="Faturamento para Empresas (Boleto)">Faturamento para Empresas (Boleto)</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Desconto (R$)</label>
+                        <input type="number" id="valDesconto" value="0" min="0" step="5" oninput="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-cyan-400 font-bold focus:border-cyan-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Pagamento</label>
+                        <select id="selPagamento" onchange="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                            <option value="PIX / Dinheiro à Vista">PIX / Dinheiro à Vista</option>
+                            <option value="Cartão - 2x sem juros">Cartão - 2x sem juros</option>
+                            <option value="Cartão - Até 10x">Cartão - Até 10x</option>
+                            <option value="Boleto Bancário">Boleto Bancário</option>
+                        </select>
+                    </div>
                 </div>
 
+                <!-- Seleção de Serviços (Mão de Obra) -->
                 <div class="space-y-1 pt-1">
-                    <label class="block text-xs font-semibold text-cyan-400 uppercase tracking-wide">Serviços de Mão de Obra:</label>
-                    <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 space-y-1 text-xs max-h-32 overflow-y-auto">
+                    <label class="block text-xs font-semibold text-cyan-400 uppercase tracking-wide">Mão de Obra (Serviços):</label>
+                    <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 space-y-1 text-xs">
                         <label class="flex items-center gap-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
-                            <input type="checkbox" id="srvInstalacao" checked onchange="calcular()" class="accent-cyan-400"> Instalação Padrão (Técnico + Ajudante)
+                            <input type="checkbox" id="srvInstalacao" checked onchange="calcular()" class="accent-cyan-400"> Instalação Técnica Padrão
                         </label>
                         <label class="flex items-center gap-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
                             <input type="checkbox" id="srvHigLocal" onchange="calcular()" class="accent-cyan-400"> Higienização Preventiva (No Local)
@@ -150,4 +159,359 @@
                             <input type="checkbox" id="srvPlaca" onchange="calcular()" class="accent-cyan-400"> Reparo em Placa Eletrônica
                         </label>
                         <label class="flex items-center gap-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
-                            <input type="checkbox
+                            <input type="checkbox" id="srvVazamento" onchange="calcular()" class="accent-cyan-400"> Correção de Vazamento + Recarga de Gás
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seleção de Materiais Opcionais -->
+                <div class="space-y-1 pt-1">
+                    <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wide">Materiais e Insumos Opcionais:</label>
+                    <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 space-y-1 text-xs">
+                        <label class="flex items-center gap-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                            <input type="checkbox" id="matSuporte" checked onchange="calcular()" class="accent-emerald-400"> Fornecer Suporte para Condensadora
+                        </label>
+                        <label class="flex items-center gap-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                            <input type="checkbox" id="matConcreto" onchange="calcular()" class="accent-emerald-400"> Perfuração em Viga / Concreto Armado
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Proposta Comercial Oficial (Visualizada e Impressa/PDF) -->
+        <section id="orcamentoImprimir" class="bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between border-b border-slate-200 pb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-cyan-600">JMS Ar Condicionado e Refrigeração</h2>
+                    <p class="text-xs text-slate-600">Instalação, Manutenção e Assistência Técnica Especializada</p>
+                    <p class="text-xs text-slate-600 mt-1">Camaçari - Bahia | CNPJ: MEI Oficial</p>
+                </div>
+                <div class="text-left sm:text-right">
+                    <span class="inline-block bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded-full mb-1">PROPOSTA COMERCIAL</span>
+                    <p class="text-xs text-slate-600">Orçamento Nº: <strong id="outNumOrc">JMS-202610</strong></p>
+                    <p class="text-xs text-slate-600">Data: <strong id="outData">26/10/2026</strong> | Validade: 7 dias</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-1">
+                <p class="font-bold text-slate-700 uppercase mb-1"><i class="fa-solid fa-user"></i> Informações do Cliente</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div><strong>Cliente:</strong> <span id="resCliNome">Não informado</span></div>
+                    <div><strong>WhatsApp:</strong> <span id="resCliTel">Não informado</span></div>
+                    <div><strong>Endereço:</strong> <span id="resCliEnd">Não informado</span></div>
+                    <div><strong>Documento:</strong> <span id="resCliDoc">Não informado</span></div>
+                </div>
+            </div>
+
+            <!-- Tabela 1: Mão de Obra -->
+            <div>
+                <h3 class="text-xs font-bold text-cyan-700 uppercase mb-2 bg-cyan-50 p-2 rounded">1. Mão de Obra e Serviços Técnicos</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                            <tr>
+                                <th class="p-2.5 rounded-l-lg">Descrição do Serviço</th>
+                                <th class="p-2.5 text-center">Tempo / Equipe</th>
+                                <th class="p-2.5 text-center">Qtd</th>
+                                <th class="p-2.5 text-right">Valor Unit.</th>
+                                <th class="p-2.5 text-right rounded-r-lg">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaServicos" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabela 2: Materiais -->
+            <div>
+                <h3 class="text-xs font-bold text-emerald-700 uppercase mb-2 bg-emerald-50 p-2 rounded">2. Fornecimento de Materiais e Insumos</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                            <tr>
+                                <th class="p-2.5 rounded-l-lg">Descrição do Material</th>
+                                <th class="p-2.5 text-center">Especificação / Bitola</th>
+                                <th class="p-2.5 text-center">Qtd</th>
+                                <th class="p-2.5 text-right">Valor Unit.</th>
+                                <th class="p-2.5 text-right rounded-r-lg">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaMateriais" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Resumo de Valores -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
+                <div class="space-y-1">
+                    <div><strong>Condição de Pagamento:</strong> <span id="resFormaPagamento" class="text-cyan-700 font-bold">PIX / Dinheiro à Vista</span></div>
+                    <div><strong>Desconto Concedido:</strong> <span id="resValorDesconto" class="text-emerald-700 font-bold">R$ 0,00</span></div>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-500 uppercase block">Valor Total do Orçamento</span>
+                    <span id="resTotalGeral" class="text-2xl sm:text-3xl font-black text-slate-900">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-4 text-[11px] text-slate-500 space-y-1">
+                <p class="font-bold text-slate-700 uppercase">Garantia e Padrão de Execução:</p>
+                <p>Serviços executados por profissionais qualificados (Técnico em Eletrotécnica) com teste de estanqueidade em nitrogênio e vácuo digital. Garantia integral de 90 dias.</p>
+            </div>
+            
+            <div class="text-center pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+                Prestador: <strong>José Manoel dos Santos</strong> | JMS Ar Condicionado e Refrigeração
+            </div>
+        </section>
+
+        <!-- Botões de Ação Final (Sempre Visíveis) -->
+        <div class="flex flex-col sm:flex-row gap-3 no-print pb-8">
+            <button onclick="enviarWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Orçamento Detalhado via WhatsApp
+            </button>
+            <button onclick="gerarPdfReal()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm cursor-pointer">
+                <i class="fa-solid fa-file-pdf"></i> Gerar e Baixar PDF Oficial
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Configuração de Preços -->
+    <div id="modalConfig" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-400"></i> Configurar Tabela de Preços</h3>
+                <button onclick="fecharConfig()" class="text-slate-400 hover:text-slate-200 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+                <div><label class="block text-slate-300 mb-1">Valor Mão de Obra Instalação [R$]</label><input type="number" id="cfgInstalacao" value="350" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+                <div><label class="block text-slate-300 mb-1">Valor Higienização Preventiva [R$]</label><input type="number" id="cfgHig" value="180" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+                <div><label class="block text-slate-300 mb-1">Valor Reparo de Placa [R$]</label><input type="number" id="cfgPlaca" value="250" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+                <div><label class="block text-slate-300 mb-1">Valor Correção Vazamento + Gás [R$]</label><input type="number" id="cfgVaz" value="220" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+                <div><label class="block text-slate-300 mb-1">Preço do Cobre por Metro [R$/m]</label><input type="number" id="cfgMetro" value="110" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+                <div><label class="block text-slate-300 mb-1">Preço do Cobre por Quilo [R$/kg]</label><input type="number" id="cfgQuilo" value="95" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+                <div><label class="block text-slate-300 mb-1">Preço do Suporte para Condensadora [R$]</label><input type="number" id="cfgSuporte" value="130" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></div>
+            </div>
+
+            <button onclick="salvarConfig()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-xl transition text-sm cursor-pointer">Salvar Configurações</button>
+        </div>
+    </div>
+
+    <script>
+        let config = { instalacao: 350, hig: 180, placa: 250, vaz: 220, metro: 110, quilo: 95, suporte: 130 };
+        let itensDetalhadosParaWhats = [];
+
+        function mascaraTelefone(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
+            if (v.length > 6) {
+                input.value = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+            } else if (v.length > 2) {
+                input.value = `(${v.slice(0,2)}) ${v.slice(2)}`;
+            } else if (v.length > 0) {
+                input.value = `(${v}`;
+            }
+            calcular();
+        }
+
+        function mascaraCep(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v.length > 8) v = v.slice(0, 8);
+            if (v.length > 5) {
+                input.value = `${v.slice(0,5)}-${v.slice(5)}`;
+            } else {
+                input.value = v;
+            }
+            if (v.length === 8) {
+                buscarCep(v);
+            }
+        }
+
+        async function buscarCep(cep) {
+            cep = cep.replace(/\D/g, '');
+            if (cep.length !== 8) return;
+            try {
+                let res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                let data = await res.json();
+                if (!data.erro) {
+                    document.getElementById('cliEnd').value = `${data.logradouro}, ${data.bairro} - ${data.localidade}/${data.uf}`;
+                    calcular();
+                }
+            } catch (e) {
+                console.log('Erro ao buscar CEP');
+            }
+        }
+
+        function abrirConfig() {
+            const modal = document.getElementById('modalConfig');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function fecharConfig() {
+            const modal = document.getElementById('modalConfig');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function salvarConfig() {
+            config.instalacao = parseFloat(document.getElementById('cfgInstalacao').value) || 350;
+            config.hig = parseFloat(document.getElementById('cfgHig').value) || 180;
+            config.placa = parseFloat(document.getElementById('cfgPlaca').value) || 250;
+            config.vaz = parseFloat(document.getElementById('cfgVaz').value) || 220;
+            config.metro = parseFloat(document.getElementById('cfgMetro').value) || 110;
+            config.quilo = parseFloat(document.getElementById('cfgQuilo').value) || 95;
+            config.suporte = parseFloat(document.getElementById('cfgSuporte').value) || 130;
+            fecharConfig();
+            calcular();
+        }
+
+        function calcular() {
+            const marca = document.getElementById('eqMarca').value;
+            const cap = document.getElementById('eqCap').value;
+            const tec = document.getElementById('eqTec').value;
+            const tipo = document.getElementById('eqTipo').value;
+            const metragemTotal = parseFloat(document.getElementById('infMetragem').value) || 0;
+            const modoCobre = document.getElementById('modoCobre').value;
+            const desconto = parseFloat(document.getElementById('valDesconto').value) || 0;
+            const formaPag = document.getElementById('selPagamento').value;
+            
+            // Definir bitolas e peso estimado por metro conforme capacidade
+            let bitola = "1/4\" e 3/8\"";
+            let pesoPorMetro = 0.35; // kg/m médio para 9k/12k
+            let suporteTipo = "Aço Carbono 400mm + Coxins";
+
+            if (cap === "18000") {
+                bitola = "1/4\" e 1/2\"";
+                pesoPorMetro = 0.50;
+                suporteTipo = "Aço Carbono Reforçado 500mm + Coxins";
+            } else if (cap === "24000") {
+                bitola = "3/8\" e 5/8\"";
+                pesoPorMetro = 0.75;
+                suporteTipo = "Aço Carbono Reforçado 600mm + Coxins";
+            } else if (cap >= "30000") {
+                bitola = "3/8\" e 3/4\"";
+                pesoPorMetro = 0.95;
+                suporteTipo = "Suporte de Solo / Piso ou Mão Francesa Pesada";
+            }
+
+            document.getElementById('resCliNome').innerText = document.getElementById('cliNome').value || 'Cliente não identificado';
+            document.getElementById('resCliTel').innerText = document.getElementById('cliTel').value || 'Não informado';
+            document.getElementById('resCliEnd').innerText = document.getElementById('cliEnd').value || 'Não informado';
+            document.getElementById('resCliDoc').innerText = document.getElementById('cliDoc').value || 'Não informado';
+
+            document.getElementById('resFormaPagamento').innerText = formaPag;
+            document.getElementById('resValorDesconto').innerText = `R$ ${desconto.toFixed(2)}`;
+
+            let tServicos = document.getElementById('tabelaServicos');
+            let tMateriais = document.getElementById('tabelaMateriais');
+            tServicos.innerHTML = '';
+            tMateriais.innerHTML = '';
+
+            itensDetalhadosParaWhats = [];
+            let totalServicos = 0;
+            let totalMateriais = 0;
+
+            function addServico(nome, tempoEquipe, qtd, unit) {
+                let subtotal = qtd * unit;
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td class="p-2.5">${nome}</td>
+                                <td class="p-2.5 text-center text-slate-500">${tempoEquipe}</td>
+                                <td class="p-2.5 text-center">${qtd} Un</td>
+                                <td class="p-2.5 text-right">R$ ${unit.toFixed(2)}</td>
+                                <td class="p-2.5 text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>`;
+                tServicos.appendChild(tr);
+                totalServicos += subtotal;
+                itensDetalhadosParaWhats.push(`• ${nome} (${qtd}x R$ ${unit.toFixed(2)}): *R$ ${subtotal.toFixed(2)}*`);
+            }
+
+            function addMaterial(nome, espec, qtdStr, qtdNum, unit) {
+                let subtotal = qtdNum * unit;
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td class="p-2.5">${nome}</td>
+                                <td class="p-2.5 text-center text-slate-500">${espec}</td>
+                                <td class="p-2.5 text-center">${qtdStr}</td>
+                                <td class="p-2.5 text-right">R$ ${unit.toFixed(2)}</td>
+                                <td class="p-2.5 text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>`;
+                tMateriais.appendChild(tr);
+                totalMateriais += subtotal;
+                itensDetalhadosParaWhats.push(`• ${nome} [${espec} - ${qtdStr}] (R$ ${unit.toFixed(2)}): *R$ ${subtotal.toFixed(2)}*`);
+            }
+
+            // 1. Serviços de Mão de Obra
+            if (document.getElementById('srvInstalacao').checked) {
+                addServico(`Instalação Padrão (${marca} ${cap} BTU ${tec})`, '2h 30min | 2 Prof.', 1, config.instalacao);
+            }
+            if (document.getElementById('srvHigLocal').checked) {
+                addServico('Higienização Técnica Preventiva', '1h 15min | 1 Técn.', 1, config.hig);
+            }
+            if (document.getElementById('srvPlaca').checked) {
+                addServico('Diagnóstico e Reparo de Placa Eletrônica', '1h 30min | 1 Técn.', 1, config.placa);
+            }
+            if (document.getElementById('srvVazamento').checked) {
+                addServico('Correção de Vazamento + Recarga de Gás', '2h 00min | 2 Prof.', 1, config.vaz);
+            }
+
+            // 2. Materiais (Cobre por Metro ou Quilo)
+            if (metragemTotal > 0) {
+                if (modoCobre === 'metro') {
+                    addMaterial('Kit Tubulação de Cobre Isolada', `Bitola ${bitola}`, `${metragemTotal} Metros`, metragemTotal, config.metro);
+                } else {
+                    let pesoEstimadoKg = metragemTotal * pesoPorMetro;
+                    addMaterial('Kit Tubulação de Cobre (Por Peso)', `Bitola ${bitola} (~${pesoPorMetro} kg/m)`, `${pesoEstimadoKg.toFixed(2)} Kg`, pesoEstimadoKg, config.quilo);
+                }
+            }
+
+            // Suporte Opcional com Material Definido
+            if (document.getElementById('matSuporte').checked) {
+                addMaterial('Suporte para Condensadora + Coxins', suporteTipo, '1 Conjunto', 1, config.suporte);
+            }
+
+            if (document.getElementById('matConcreto').checked) {
+                addMaterial('Perfuração Especial em Viga / Concreto', 'Broca Diamantada', '1 Serviço', 1, 120.00);
+            }
+
+            let totalBruto = totalServicos + totalMateriais;
+            let totalGeral = Math.max(0, totalBruto - desconto);
+            
+            document.getElementById('resTotalGeral').innerText = `R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        function gerarPdfReal() {
+            const element = document.getElementById('orcamentoImprimir');
+            const nomeCliente = document.getElementById('cliNome').value.trim() || 'Orcamento';
+            const opt = {
+                margin:       10,
+                filename:     `Orcamento_${nomeCliente.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+
+        function enviarWhatsApp() {
+            const nome = document.getElementById('cliNome').value || 'Cliente';
+            const total = document.getElementById('resTotalGeral').innerText;
+            const pag = document.getElementById('selPagamento').value;
+            const descVal = document.getElementById('valDesconto').value;
+            
+            let listaTexto = itensDetalhadosParaWhats.join('\n');
+            let textoDesconto = (parseFloat(descVal) > 0) ? `*Desconto:* R$ ${parseFloat(descVal).toFixed(2)}\n` : '';
+
+            let msg = `❄️ *JMS AR CONDICIONADO E REFRIGERAÇÃO* ❄️\n` +
+                      `Proposta para *${nome}*:\n\n` +
+                      `*Itens:* \n${listaTexto}\n\n` +
+                      `${textoDesconto}` +
+                      `💰 *Total:* *${total}*\n` +
+                      `💳 *Pagamento:* ${pag}\n\n` +
+                      `🔧 Prestador: José Manoel dos Santos\n` +
+                      `Podemos aprovar o serviço?`;
+
+            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+        }
+
+        window.onload = () => { calcular(); };
+    </script>
+</body>
+</html>

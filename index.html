@@ -39,7 +39,7 @@
                 
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Nome do Cliente / Razão Social</label>
-                    <input type="text" id="cliNome" oninput="calcular()" placeholder="Ex: João da Silva" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                    <input type="text" id="cliNome" oninput="calcular()" placeholder="Ex: Tadeu Humberto" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -67,16 +67,14 @@
                             <option value="LG">LG</option>
                             <option value="Midea">Midea</option>
                             <option value="Samsung">Samsung</option>
-                            <option value="Springer Midea">Springer Midea</option>
                             <option value="Daikin">Daikin</option>
-                            <option value="Fujitsu">Fujitsu</option>
                             <option value="Consul">Consul</option>
                             <option value="Electrolux">Electrolux</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1">Capacidade</label>
-                        <select id="eqCap" onchange="atualizarTecnico()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
+                        <select id="eqCap" onchange="calcular()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 outline-none">
                             <option value="9000">9.000 BTU/h</option>
                             <option value="12000">12.000 BTU/h</option>
                             <option value="18000" selected>18.000 BTU/h</option>
@@ -227,7 +225,7 @@
                 </div>
             </div>
 
-            <!-- Resumo de Valores, Desconto e Pagamento -->
+            <!-- Resumo de Valores -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
                 <div class="space-y-1">
                     <div><strong>Condição de Pagamento:</strong> <span id="resFormaPagamento" class="text-cyan-700 font-bold">PIX / Dinheiro à Vista</span></div>
@@ -252,7 +250,7 @@
         <!-- Botões de Ação -->
         <div class="flex flex-col sm:flex-row gap-3 no-print pb-8">
             <button onclick="enviarWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm sm:text-base">
-                <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Orçamento via WhatsApp
+                <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Orçamento Detalhado via WhatsApp
             </button>
             <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm">
                 <i class="fa-solid fa-print"></i> Imprimir / Salvar PDF
@@ -283,9 +281,10 @@
 
     <script>
         let config = { instalacao: 350, hig: 180, placa: 250, vaz: 220, metro: 110, suporte: 130 };
+        let itensDetalhadosParaWhats = [];
 
         function abrirConfig() { document.getElementById('modalConfig').classList.remove('hidden'); document.getElementById('modalConfig').classList.add('flex'); }
-        function fecharConfig() { document.getElementById('modalConfig').classList.remove('flex'); document.getElementById('modalConfig').classList.add('hidden'); }
+        function fecharConfig() { document.getElementById('modalConfig').classList.remove('hidden'); document.getElementById('modalConfig').classList.remove('flex'); document.getElementById('modalConfig').classList.add('hidden'); }
         function salvarConfig() {
             config.instalacao = parseFloat(document.getElementById('cfgInstalacao').value) || 350;
             config.hig = parseFloat(document.getElementById('cfgHig').value) || 180;
@@ -308,7 +307,6 @@
             let preCarga = cap >= 30000 ? 7.5 : 5.0;
             let metrosExtra = Math.max(0, metragemTotal - preCarga);
 
-            // Espelhar dados do cliente
             document.getElementById('resCliNome').innerText = document.getElementById('cliNome').value || 'Cliente não identificado';
             document.getElementById('resCliTel').innerText = document.getElementById('cliTel').value || 'Não informado';
             document.getElementById('resCliEnd').innerText = document.getElementById('cliEnd').value || 'Não informado';
@@ -322,6 +320,7 @@
             tServicos.innerHTML = '';
             tMateriais.innerHTML = '';
 
+            itensDetalhadosParaWhats = [];
             let totalServicos = 0;
             let totalMateriais = 0;
 
@@ -335,6 +334,7 @@
                                 <td class="p-2.5 text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>`;
                 tServicos.appendChild(tr);
                 totalServicos += subtotal;
+                itensDetalhadosParaWhats.push(`• ${nome} (${qtd}x R$ ${unit.toFixed(2)}): *R$ ${subtotal.toFixed(2)}*`);
             }
 
             function addMaterial(nome, qtdStr, qtdNum, unit) {
@@ -346,28 +346,27 @@
                                 <td class="p-2.5 text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>`;
                 tMateriais.appendChild(tr);
                 totalMateriais += subtotal;
+                itensDetalhadosParaWhats.push(`• ${nome} [${qtdStr}] (R$ ${unit.toFixed(2)} un): *R$ ${subtotal.toFixed(2)}*`);
             }
 
-            // Mão de Obra
             if (document.getElementById('srvInstalacao').checked) {
-                addServico(`Instalação Padrão Split (${marca} ${cap} BTU ${tec})`, '2h 30min | 2 Prof.', 1, config.instalacao);
+                addServico(`Instalação Padrão Split (${marca} ${cap} BTU ${tec})`, '2h 30min', 1, config.instalacao);
             }
             if (document.getElementById('srvHigLocal').checked) {
-                addServico('Higienização Técnica Preventiva', '1h 15min | 1 Técn.', 1, config.hig);
+                addServico('Higienização Técnica Preventiva', '1h 15min', 1, config.hig);
             }
             if (document.getElementById('srvPlaca').checked) {
-                addServico('Diagnóstico e Reparo de Placa Eletrônica', '1h 30min | 1 Técn.', 1, config.placa);
+                addServico('Diagnóstico e Reparo de Placa Eletrônica', '1h 30min', 1, config.placa);
             }
             if (document.getElementById('srvVazamento').checked) {
-                addServico('Correção de Vazamento + Recarga de Gás', '2h 00min | 2 Prof.', 1, config.vaz);
+                addServico('Correção de Vazamento + Recarga de Gás', '2h 00min', 1, config.vaz);
             }
 
-            // Materiais
             if (document.getElementById('matSuporte').checked) {
                 addMaterial('Suporte Técnico da Condensadora + Coxins', '1 Conjunto', 1, config.suporte);
             }
             if (metrosExtra > 0) {
-                addMaterial(`Tubulação de Cobre Isolada Extra`, `${metrosExtra.toFixed(1)} Metros`, metrosExtra, config.metro);
+                addMaterial('Tubulação de Cobre Isolada Extra', `${metrosExtra.toFixed(1)} Metros`, metrosExtra, config.metro);
             }
             if (document.getElementById('matConcreto').checked) {
                 addMaterial('Perfuração Especial em Viga / Concreto', '1 Serviço', 1, 120.00);
@@ -383,7 +382,20 @@
             const nome = document.getElementById('cliNome').value || 'Cliente';
             const total = document.getElementById('resTotalGeral').innerText;
             const pag = document.getElementById('selPagamento').value;
-            const msg = `Olá *${nome}*, segue o orçamento detalhado da *JMS Ar Condicionado e Refrigeração*:\n\n*Valor Total:* ${total}\n*Forma de Pagamento:* ${pag}\n\nPrestador: José Manoel dos Santos. Podemos aprovar a execução?`;
+            const descVal = document.getElementById('valDesconto').value;
+            
+            let listaTexto = itensDetalhadosParaWhats.join('\n');
+            let textoDesconto = (parseFloat(descVal) > 0) ? `*Desconto Concedido:* R$ ${parseFloat(descVal).toFixed(2)}\n` : '';
+
+            let msg = `❄️ *JMS AR CONDICIONADO E REFRIGERAÇÃO* ❄️\n` +
+                      `Proposta Comercial para *${nome}*:\n\n` +
+                      `*Itens do Orçamento:* \n${listaTexto}\n\n` +
+                      `${textoDesconto}` +
+                      `💰 *Valor Total:* *${total}*\n` +
+                      `💳 *Forma de Pagamento:* ${pag}\n\n` +
+                      `🔧 Prestador: José Manoel dos Santos\n` +
+                      `Podemos aprovar e agendar a execução do serviço?`;
+
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
